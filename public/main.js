@@ -1,10 +1,10 @@
-let Peer = require('simple-peer')
-let socket = io()
-const video = document.querySelector('video')
-const filter = document.querySelector('#filter')
-const checkboxTheme = document.querySelector('#theme')
-let client = {}
-let currentFilter
+let Peer = require('simple-peer');
+let socket = io();
+const video = document.querySelector('video');
+const filter = document.querySelector('#filter');
+const checkboxTheme = document.querySelector('#theme');
+let client = {};
+let currentFilter;
 //get stream
 navigator.mediaDevices.getUserMedia({video: true, audio: true})
     .then(stream => {
@@ -21,7 +21,7 @@ navigator.mediaDevices.getUserMedia({video: true, audio: true})
 
         //used to initialize a peer
         function InitPeer(type) {
-            let peer = new Peer({initiator: (type == 'init') ? true : false, stream: stream, trickle: false})
+            let peer = new Peer({initiator: (type == 'init') ? true : false, stream: stream, trickle: false});
             peer.on('stream', function (stream) {
                 CreateVideo(stream)
             });
@@ -31,56 +31,56 @@ navigator.mediaDevices.getUserMedia({video: true, audio: true})
             //     peer.destroy()
             // })
             peer.on('data', function (data) {
-                let decodedData = new TextDecoder('utf-8').decode(data)
-                let peervideo = document.querySelector('#peerVideo')
+                let decodedData = new TextDecoder('utf-8').decode(data);
+                let peervideo = document.querySelector('#peerVideo');
                 peervideo.style.filter = decodedData
-            })
+            });
             return peer
         }
 
         //for peer of type init
         function MakePeer() {
-            client.gotAnswer = false
-            let peer = InitPeer('init')
+            client.gotAnswer = false;
+            let peer = InitPeer('init');
             peer.on('signal', function (data) {
                 if (!client.gotAnswer) {
                     socket.emit('Offer', data)
                 }
-            })
+            });
             client.peer = peer
         }
 
         //for peer of type not init
         function FrontAnswer(offer) {
-            let peer = InitPeer('notInit')
+            let peer = InitPeer('notInit');
             peer.on('signal', (data) => {
                 socket.emit('Answer', data)
-            })
-            peer.signal(offer)
+            });
+            peer.signal(offer);
             client.peer = peer
         }
 
         function SignalAnswer(answer) {
-            client.gotAnswer = true
-            let peer = client.peer
+            client.gotAnswer = true;
+            let peer = client.peer;
             peer.signal(answer)
         }
 
         function CreateVideo(stream) {
-            CreateDiv()
+            CreateDiv();
 
             let video = document.createElement('video');
             video.id = 'peerVideo';
             video.srcObject = stream;
             video.setAttribute('class', 'embed-responsive-item');
-            document.querySelector('#peerDiv').appendChild(video)
-            video.play()
+            document.querySelector('#peerDiv').appendChild(video);
+            video.play();
             //wait for 1 sec
-            setTimeout(() => SendFilter(currentFilter), 1000)
+            setTimeout(() => SendFilter(currentFilter), 1000);
 
             video.addEventListener('click', () => {
                 if (video.volume != 0)
-                    video.volume = 0
+                    video.volume = 0;
                 else
                     video.volume = 1
             })
@@ -105,24 +105,24 @@ navigator.mediaDevices.getUserMedia({video: true, audio: true})
             }
         }
 
-        socket.on('BackOffer', FrontAnswer)
-        socket.on('BackAnswer', SignalAnswer)
-        socket.on('SessionActive', SessionActive)
-        socket.on('CreatePeer', MakePeer)
+        socket.on('BackOffer', FrontAnswer);
+        socket.on('BackAnswer', SignalAnswer);
+        socket.on('SessionActive', SessionActive);
+        socket.on('CreatePeer', MakePeer);
         socket.on('Disconnect', RemovePeer)
 
     })
-    .catch(err => document.write(err))
+    .catch(err => document.write(err));
 
 checkboxTheme.addEventListener('click', () => {
         if (checkboxTheme.checked == true) {
-            document.body.style.backgroundColor = '#212529'
+            document.body.style.backgroundColor = '#212529';
             if (document.querySelector('#muteText')) {
                 document.querySelector('#muteText').style.color = "#fff"
             }
 
         } else {
-            document.body.style.backgroundColor = '#fff'
+            document.body.style.backgroundColor = '#fff';
             if (document.querySelector('#muteText')) {
                 document.querySelector('#muteText').style.color = "#212529"
             }
@@ -131,11 +131,11 @@ checkboxTheme.addEventListener('click', () => {
 );
 
 function CreateDiv() {
-    let div = document.createElement('div')
-    div.setAttribute('class', "centered")
-    div.id = "muteText"
-    div.innerHTML = "Click to Mute/Unmute"
-    document.querySelector('#peerDiv').appendChild(div)
+    let div = document.createElement('div');
+    div.setAttribute('class', "centered");
+    div.id = "muteText";
+    div.innerHTML = "Click to Mute/Unmute";
+    document.querySelector('#peerDiv').appendChild(div);
     if (checkboxTheme.checked == true)
         document.querySelector('#muteText').style.color = "#fff"
 }
